@@ -1,0 +1,65 @@
+# Env config
+seed: 159
+GPUs: "0" # "0,1,2,3"
+
+# In
+train_csv: !PLACEHOLDER
+test_csv: !PLACEHOLDER
+
+# Out
+exp_name: !PLACEHOLDER
+exp_dir: !ref exp/<exp_name>-<seed>
+
+# MFCC - Feat extractor
+max_duration: 5.0 # sec
+n_mfcc: 40
+sampling_rate: 48000
+log_mels: True
+melkwargs:
+    n_fft: 512
+    n_mels: 40
+    hop_length: 128
+    mel_scale: "htk"
+
+# Model
+num_classes: 4
+model_fpath: src/custom_Audio_ResNet
+model_config:
+    resnet_arch: resnet_18
+    num_labels: !ref <num_classes>
+
+# Training Arguments
+num_workers: 32
+batch_size: 16
+num_epoch: 100
+learning_rate: 1e-5
+model_ckpts: !ref <exp_dir>/ckpts
+training_args: !new:transformers.TrainingArguments
+    output_dir: !ref <exp_dir>
+    evaluation_strategy: !name:transformers.IntervalStrategy.STEPS
+    save_strategy: "steps"
+    save_steps: !!int 50  # Save checkpoints after ... steps
+    eval_steps: !!int 50  # Evaluation takes places every ... steps
+    save_total_limit: 5   # Only last ... models are saved. Older ones are deleted.
+    logging_steps: !!int 50
+    learning_rate: !ref <learning_rate>
+    per_device_train_batch_size: !ref <batch_size>
+    per_device_eval_batch_size: !ref <batch_size>
+    dataloader_num_workers: !ref <num_workers>
+    gradient_accumulation_steps: 4
+    eval_accumulation_steps: 4
+    num_train_epochs: !ref <num_epoch>
+    load_best_model_at_end: True
+    warmup_ratio: 0.1
+    metric_for_best_model: "f1"
+    seed: !ref <seed>
+    push_to_hub: False
+
+early_stopping: !new:transformers.EarlyStoppingCallback
+    early_stopping_patience: 20
+    # early_stopping_threshold: 0.5
+
+
+# Trainer config
+compute_cost: !new:torch.nn.NLLLoss
+# compute_cost: !new:torch.nn.CrossEntropyLoss

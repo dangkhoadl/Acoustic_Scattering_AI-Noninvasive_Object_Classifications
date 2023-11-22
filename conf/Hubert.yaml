@@ -1,0 +1,50 @@
+# Env config
+seed: 258
+GPUs: "0" # "0,1,2,3"
+
+# In
+train_csv: !PLACEHOLDER
+test_csv: !PLACEHOLDER
+
+# Out
+exp_name: !PLACEHOLDER
+exp_dir: !ref exp/<exp_name>-<seed>
+
+# Feat extractor
+sampling_rate: 48000
+max_duration: 5.2 # sec
+feat_extractor_fpath: src/Hubert/hubert-feature-extractor
+
+# model
+num_classes: 4
+hubert_model_fpath: src/Hubert/hubert-speechcommand-model
+finetuned_layers: null
+
+# Training Arguments
+num_workers: 32
+batch_size: 16
+num_epoch: 100
+learning_rate: 1e-5
+model_ckpts: !ref <exp_dir>/ckpts
+training_args: !new:transformers.TrainingArguments
+    output_dir: !ref <exp_dir>
+    evaluation_strategy: "steps"
+    save_strategy: "steps"
+    eval_steps: !!int 50  # Evaluation and Save happens every 50 steps
+    save_total_limit: 5   # Only last 5 models are saved. Older ones are deleted.
+    learning_rate: !ref <learning_rate>
+    per_device_train_batch_size: !ref <batch_size>
+    per_device_eval_batch_size: !ref <batch_size>
+    dataloader_num_workers: !ref <num_workers>
+    gradient_accumulation_steps: 4
+    eval_accumulation_steps: 4
+    num_train_epochs: !ref <num_epoch>
+    load_best_model_at_end: True
+    warmup_ratio: 0.1
+    logging_steps: !!int 100
+    metric_for_best_model: "f1"
+    seed: !ref <seed>
+    push_to_hub: False
+
+# Trainer config
+compute_cost: !new:torch.nn.CrossEntropyLoss
