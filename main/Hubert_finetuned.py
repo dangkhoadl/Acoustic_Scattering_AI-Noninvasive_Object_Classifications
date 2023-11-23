@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 '''
-https://github.com/V-Sher/Audio-Classification-HF/blob/main/scripts/audio_train.py
 '''
-
 import sys, os
+sys.path.append(os.path.realpath('.'))
+
 import yaml
 from hyperpyyaml import load_hyperpyyaml
 

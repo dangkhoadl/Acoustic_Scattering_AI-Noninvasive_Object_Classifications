@@ -68,5 +68,5 @@ early_stopping: !new:transformers.EarlyStoppingCallback
     # early_stopping_threshold: 0.5
 
 # Trainer config
-# compute_cost: !new:torch.nn.NLLLoss
-compute_cost: !new:torch.nn.CrossEntropyLoss
+compute_cost: !new:torch.nn.NLLLoss
+# compute_cost: !new:torch.nn.CrossEntropyLoss

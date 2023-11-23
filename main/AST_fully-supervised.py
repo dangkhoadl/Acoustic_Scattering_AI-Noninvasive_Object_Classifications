@@ -3,6 +3,8 @@
 Train AST from scratch
 '''
 import sys, os
+sys.path.append(os.path.realpath('.'))
+
 import yaml
 from hyperpyyaml import load_hyperpyyaml
 

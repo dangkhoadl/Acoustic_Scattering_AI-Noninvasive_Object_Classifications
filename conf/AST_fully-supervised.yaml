@@ -1,5 +1,5 @@
 # Env config
-seed: 159
+seed: 369
 GPUs: "0" # "0,1,2,3"
 
 # In
@@ -10,23 +10,28 @@ test_csv: !PLACEHOLDER
 exp_name: !PLACEHOLDER
 exp_dir: !ref exp/<exp_name>-<seed>
 
-# MFCC - Feat extractor
-max_duration: 5.0 # sec
-n_mfcc: 40
+# Feat extractor: [m, num_frames, num_mels]
 sampling_rate: 48000
-log_mels: True
-melkwargs:
-    n_fft: 512
-    n_mels: 40
-    hop_length: 128
-    mel_scale: "htk"
+feat_extractor: !new:transformers.ASTFeatureExtractor
+    sampling_rate: !ref <sampling_rate>
+    padding: "max_length"
+    return_tensors: "pt"
+    return_attention_mask: True
+    feature_size: 1
+    num_mel_bins: 128
+    padding_side: "right"
+    padding_value: !!float 0.0
+    max_length: 1024
+    do_normalize: True
+    mean: !!float -5.737031936645508
+    std: !!float 5.324974536895752
+    # Note: tune the mean, std, max_length values in local/ast-get_norm_stats.py
+    #       avg_mean = 0.0
+    #       avg_std = 0.5
+    #       max_length covers num_frames
 
-# Model
+# AST model
 num_classes: 4
-model_fpath: src/custom_Audio_ResNet
-model_config:
-    resnet_arch: resnet_50 # resnet_18, resnet_34, resnet_50, resnet_101, resnet_152
-    num_labels: !ref <num_classes>
 
 # Training Arguments
 num_workers: 32
@@ -36,10 +41,10 @@ learning_rate: 1e-5
 model_ckpts: !ref <exp_dir>/ckpts
 training_args: !new:transformers.TrainingArguments
     output_dir: !ref <exp_dir>
-    evaluation_strategy: !name:transformers.IntervalStrategy.STEPS
+    evaluation_strategy: "steps"
     save_strategy: "steps"
     save_steps: !!int 50  # Save checkpoints after ... steps
-    eval_steps: !!int 50  # Evaluation takes places every ... steps
+    eval_steps: !!int 50  # Evaluation happens every ... steps
     save_total_limit: 5   # Only last ... models are saved. Older ones are deleted.
     logging_steps: !!int 50
     learning_rate: !ref <learning_rate>
@@ -55,11 +60,6 @@ training_args: !new:transformers.TrainingArguments
     seed: !ref <seed>
     push_to_hub: False
 
-early_stopping: !new:transformers.EarlyStoppingCallback
-    early_stopping_patience: 20
-    # early_stopping_threshold: 0.5
-
-
 # Trainer config
-compute_cost: !new:torch.nn.NLLLoss
-# compute_cost: !new:torch.nn.CrossEntropyLoss
+compute_cost: !new:torch.nn.CrossEntropyLoss
+# compute_cost: !new:torch.nn.NLLLoss

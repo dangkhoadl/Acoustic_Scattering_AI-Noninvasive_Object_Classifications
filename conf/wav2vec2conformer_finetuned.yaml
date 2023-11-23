@@ -1,5 +1,5 @@
 # Env config
-seed: 159
+seed: 147
 GPUs: "0" # "0,1,2,3"
 
 # In
@@ -10,29 +10,21 @@ test_csv: !PLACEHOLDER
 exp_name: !PLACEHOLDER
 exp_dir: !ref exp/<exp_name>-<seed>
 
-# MFCC - Feat extractor
-max_duration: 5.0 # sec
-n_mfcc: 40
+# Feat extractor
 sampling_rate: 48000
-log_mels: True
-melkwargs:
-    n_fft: 512
-    n_mels: 40
-    hop_length: 128
-    mel_scale: "htk"
+max_duration: 5.0 # sec
+feat_extractor_fpath: src/wav2vec2-Conformer/wav2vec2_conformer-feature_extractor-48k
 
-# Model
+# model
 num_classes: 4
-model_fpath: src/custom_Audio_ResNet
-model_config:
-    resnet_arch: resnet_50 # resnet_18, resnet_34, resnet_50, resnet_101, resnet_152
-    num_labels: !ref <num_classes>
+model_fpath: src/wav2vec2-Conformer/wav2vec2_conformer-model
+finetuned_layers: null
 
 # Training Arguments
 num_workers: 32
-batch_size: 16
-num_epoch: 100
-learning_rate: 1e-5
+batch_size: 4
+num_epoch: 30
+learning_rate: 2e-5
 model_ckpts: !ref <exp_dir>/ckpts
 training_args: !new:transformers.TrainingArguments
     output_dir: !ref <exp_dir>
@@ -59,7 +51,5 @@ early_stopping: !new:transformers.EarlyStoppingCallback
     early_stopping_patience: 20
     # early_stopping_threshold: 0.5
 
-
 # Trainer config
-compute_cost: !new:torch.nn.NLLLoss
-# compute_cost: !new:torch.nn.CrossEntropyLoss
+compute_cost: !new:torch.nn.CrossEntropyLoss

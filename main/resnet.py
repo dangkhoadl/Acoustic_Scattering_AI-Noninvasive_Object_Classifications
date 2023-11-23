@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 '''
 '''
-
 import sys, os
+sys.path.append(os.path.realpath('.'))
+
 import yaml
 from hyperpyyaml import load_hyperpyyaml
 
@@ -21,6 +22,7 @@ import torchaudio.transforms as T
 from transformers import Trainer, TrainerCallback
 from src.custom_Audio_ResNet.custom_model import \
     ResNetAudio_Config, ResNetForAudioClassification
+
 
 def parse_arguments(args):
     yaml_fpath, *override_args = args
